@@ -1,7 +1,7 @@
 //subsystems: 
 //1. DONE bare arduino able to generate accurate Totps with secret key and time
 //2. integration of keypad and typing, "enter"
-//3. integration of lcd screen and print outputs/status
+//3. DONE integration of lcd screen and print outputs/status
 //4. DONE integration of hardware real time clock so that arduino can sync time even when powered off
 //5. integration of keypad inputs and comparison with the correct otp
 //6. integration of useful outputs upon success, eg servo lock actuation or led bulb lights
@@ -13,6 +13,9 @@
 #include "Time.h"
 #include "DS1302RTC.h"
 
+#include "Wire.h"
+#include "LiquidCrystal_I2C.h"
+
 // The shared secret is MyLegoDoor// SecretKey1
 uint8_t hmacKey[] = {0x53, 0x65, 0x63, 0x72, 0x65, 0x74, 0x4b, 0x65, 0x79, 0x31}; //{0x4d, 0x79, 0x4c, 0x65, 0x67, 0x6f, 0x44, 0x6f, 0x6f, 0x72};
 
@@ -23,10 +26,18 @@ char code[7];
 //RTC Set pins:  CE, IO,CLK
 DS1302RTC RTC(5, 6, 7);
 
+//I2C LCD
+LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);  // Set the LCD I2C address
+
 
 void setup() {
+  digitalWrite(12, HIGH);
+
   
   Serial.begin(9600);
+
+  lcd.begin(16,2);
+
 //  rtc.stopRTC();
 //  
 //  // Adjust the following values to match the current date and time
@@ -71,6 +82,14 @@ void loop() {
     Serial.print(tm.Wday);
     Serial.println();
     }
+
+    //lcd outputs
+    lcd.clear();
+    lcd.setCursor(0,0); //Start at character 4 on line 0
+    lcd.print("OTP: ");
+    lcd.print(code);
+    //lcd.setCursor(0,1);
+    
   }  
 }
 
