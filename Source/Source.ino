@@ -3,8 +3,8 @@
 //2. DONE integration of keypad and typing, "enter"
 //3. DONE integration of lcd screen and print outputs/status
 //4. DONE integration of hardware real time clock so that arduino can sync time even when powered off
-//5. integration of keypad inputs and comparison with the correct otp
-//6. integration of useful outputs upon success, eg servo lock actuation or led bulb lights
+//5. DONE integration of keypad inputs and comparison with the correct otp
+//6. DONE integration of useful outputs upon success, eg servo lock actuation or led bulb lights
 
 #include "sha1.h"
 #include "TOTP.h"
@@ -48,11 +48,14 @@ byte colPins[numCols] = {5, 4, 3, 2}; //Columns 0 to 3
 //initializes an instance of the Keypad class
 Keypad myKeypad = Keypad(makeKeymap(keymap), rowPins, colPins, numRows, numCols);
 
+
+
 //variables
-
-
+String keyEntered = "";
 
 void setup() {
+  //LED Output
+  analogWrite(A3, 0); //gnd of led
   digitalWrite(13, HIGH); //vcc for hw rtc
 
   Serial.begin(9600);
@@ -75,11 +78,32 @@ void loop() {
   char keypressed = myKeypad.getKey();
   if (keypressed != NO_KEY)
   {
-    Serial.print(keypressed);
-  }
+    Serial.print("keypressed is: ");
+    Serial.println(keypressed);
+    if (keypressed == char('*')) { //clear
+      Serial.println("input cleared");
+      //keyEntered = keyEntered.substring(0, keyEntered.length() - 1); //backspace
+      keyEntered = "";
+    }
+    else if (keypressed == char('#')) {
+      //enter command
+      codeChecker(keyEntered);
+      keyEntered = "";
+    }
+    else {
+      keyEntered += keypressed;
+    }
 
-  lcd.setCursor(0,1); //to print the key that is currently typed in
-  lcd.print("");
+    //updates lcd output
+    //    lcd.clear(); //resets the lcd display
+    //    lcd.setCursor(0, 0); //Start at character 4 on line 0
+    //    lcd.print("OTP: ");
+    //    lcd.print(code); //shows the same otp over and over until
+    lcd.setCursor(0, 1); //to print the key that is currently typed in
+    lcd.print("                ");
+    lcd.setCursor(0, 1); //to print the key that is currently typed in
+    lcd.print(keyEntered);
+  }
 
   //long GMT = rtc.getTimestamp(); //this is for the softRTC internal to arduino
 
@@ -119,7 +143,8 @@ void loop() {
     lcd.setCursor(0, 0); //Start at character 4 on line 0
     lcd.print("OTP: ");
     lcd.print(code);
-    //lcd.setCursor(0,1);
+    lcd.setCursor(0,1);
+    lcd.print(keyEntered);
 
   }
 }
@@ -129,3 +154,20 @@ void print2digits(int number) {
     Serial.write('0');
   Serial.print(number);
 }
+
+void codeChecker(String inputKey) { //checks the code when enter key is pressed
+  Serial.println("Entered Code Checker");
+  if (String(inputKey) == String(code)) { //if code is correct, send correct signal out
+    Serial.println("Code is Correct!");
+    analogWrite(A1, 255);
+    delay(2000);
+    analogWrite(A1, 0);
+  }
+  else {
+    Serial.println("Code is Wrong!");
+    analogWrite(A0, 255);
+    delay(2000);
+    analogWrite(A0, 0);
+  }
+}
+
