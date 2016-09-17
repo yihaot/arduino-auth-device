@@ -1,10 +1,10 @@
-// GetCode.ino
-// 
-// Basic example for the TOTP library
-//
-// This example uses the opensource SwRTC library as a software real-time clock
-// you can download from https://github.com/leomil72/swRTC
-// for real implementation it's suggested the use of an hardware RTC
+//subsystems: 
+//1. bare arduino able to generate accurate Totps with secret key and time
+//2. integration of keypad and typing, "enter"
+//3. integration of lcd screen and print outputs/status
+//4. integration of hardware real time clock so that arduino can sync time even when powered off
+//5. integration of keypad inputs and comparison with the correct otp
+//6. integration of useful outputs upon success, eg servo lock actuation or led bulb lights
 
 #include "sha1.h"
 #include "TOTP.h"
